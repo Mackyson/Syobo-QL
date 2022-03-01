@@ -15,12 +15,15 @@ type Symbol struct{
 	//TokenType int
 	Name string
 }
-type Literal struct{
+type Literal struct {
 	Type int //Token番号で数値か文字列か判定する
-	Value string //数値でも文字列でもstringで値を持つ
+	Value interface{} //Type switchで判定
 }
-type Num string
-type Str string
+/*
+type Num struct{int}
+type Str struct{string}
+*/
+const EOF=0
 
 var keywords = map[string]int{//文字列とトークン番号の紐付け用map
 	//記号
@@ -74,7 +77,7 @@ var keywords = map[string]int{//文字列とトークン番号の紐付け用map
 	comp_type int
 
 	//専用の型に変更するかも
-	num string
+	num int
 	str string
 }
 
@@ -243,11 +246,24 @@ type Lexer struct{
 }
 
 func (l *Lexer)Lex(lval *yySymType) int {
-	token := int(l.Scan())
+	scanner_token := int(l.Scan())
+	var token int
 	literal := l.TokenText()
-	if token == scanner.Int {
+	switch(scanner_token){
+		case scanner.EOF:
+			token = EOF //yaccにおけるEOF
+		case scanner.Int:
 		token = NUM
-	} else {
+			val,_ := strconv.Atoi(literal)
+			lval.literal = Literal{Type:token, Value:val}
+			lval.num = val
+		case scanner.String:
+			fmt.Println("string:",literal) //Stringのパースは怪しいそうなので一旦出力しておく
+			lval.literal = Literal{Type:token, Value:literal}
+			lval.str = literal
+			token = STR
+		//case scanner.Ident: // Identでは一文字記号のトークンを切り出せない
+		default:
 		if keyword,ok := keywords[literal];ok{
 			token = keyword
 		} else {
