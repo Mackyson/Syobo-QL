@@ -38,12 +38,11 @@ var keywords = map[string]int{//文字列とトークン番号の紐付け用map
 	
 	//比較演算子
 	"=":EQ,
-	"<>":NEQ,
-	"!=":NEQ,
+//	"<>":NEQ,
 	"<":LT,
-	"<=":LE,
+//	"<=":LE,
 	">":GT,
-	">=":GE,
+//	">=":GE,
 	
 	//Misc
 	"IDENT":IDENT,
@@ -121,7 +120,7 @@ select_statement
 from_clause
 	: FROM IDENT
 	{
-		fmt.Println("a table",$2.Name,"is selected")
+		fmt.Println("table",$2.Name,"is selected")
 		$$ = new(Clause)
 	}
 
@@ -172,12 +171,19 @@ literal
 	}
 
 comp
-	: EQ	{fmt.Println("==")}
-	| NEQ	{fmt.Println("<>")}
-	| LT	{fmt.Println("<")}
-	| LE	{fmt.Println("<=")}
-	| GT	{fmt.Println(">")}
-	| GE	{fmt.Println(">=")}
+	: eq	{fmt.Println("WHERE clause comparator: ==")}
+	| neq	{fmt.Println("WHERE clause comparator: <>")}
+	| lt	{fmt.Println("WHERE clause comparator: <")}
+	| le	{fmt.Println("WHERE clause comparator: <=")}
+	| gt	{fmt.Println("WHERE clause comparator: >")}
+	| ge	{fmt.Println("WHERE clause comparator: >=")}
+eq : EQ
+neq : LT GT
+lt : LT
+le : LT EQ
+gt : GT
+ge : GT EQ
+
 
 group_by_clause
 	: {fmt.Println("not grouped")}
@@ -284,7 +290,7 @@ func (l *Lexer)Lex(lval *yySymType) int {
 			}
 	}
 	lval.symbol = Symbol{Name: literal}
-	fmt.Println(token,literal)//debug
+	//fmt.Println(token,literal)//debug
 
 	return token
 }
